@@ -7,13 +7,23 @@ import '../models/dictionary_model.dart';
 ///
 /// Uses the free Dictionary API to look up word definitions,
 /// phonetics, and examples.
+///
+/// Includes built-in caching to avoid repeated API calls for the same word.
+///
+/// Example:
+/// ```dart
+/// final service = DictionaryService();
+/// final definition = await service.getDefinition('flutter');
+/// print(definition.word);
+/// ```
 class DictionaryService {
   /// Creates a [DictionaryService] instance.
-  ///
-  /// Optionally accepts a custom [Dio] instance for testing.
-  DictionaryService({Dio? dio}) : _dio = dio ?? _createDefaultDio();
+  DictionaryService() : _dio = _createDefaultDio();
 
   final Dio _dio;
+
+  /// Cache for storing fetched definitions to avoid repeated API calls.
+  final Map<String, DictionaryModel> _cache = {};
 
   /// Base URL for the dictionary API.
   static const String _baseUrl = 'https://api.dictionaryapi.dev/api/v2/entries';
@@ -59,6 +69,11 @@ class DictionaryService {
       throw DictionaryError.notFound(word);
     }
 
+    // Return cached result if available
+    if (_cache.containsKey(cleanedWord)) {
+      return _cache[cleanedWord]!;
+    }
+
     try {
       final response = await _dio.get<List<dynamic>>(
         '/$_defaultLanguage/$cleanedWord',
@@ -69,10 +84,20 @@ class DictionaryService {
       }
 
       final data = response.data!.first as Map<String, dynamic>;
-      return DictionaryModel.fromJson(data);
+      final model = DictionaryModel.fromJson(data);
+
+      // Cache the result
+      _cache[cleanedWord] = model;
+
+      return model;
     } on DioException catch (e) {
       throw _handleDioError(e, cleanedWord);
     }
+  }
+
+  /// Clears the definition cache.
+  void clearCache() {
+    _cache.clear();
   }
 
   /// Cleans a word for API lookup.

@@ -1,58 +1,58 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-import '../config/dictionary_config.dart';
 import '../config/tutorial_config.dart';
 import '../controllers/dictionary_controller.dart';
 import '../enums/display_mode.dart';
 import '../enums/trigger_mode.dart';
 import '../models/dictionary_error.dart';
-import '../services/dictionary_service.dart';
-import '../utils/color_utils.dart';
 import '../utils/storage_helper.dart';
-import 'animated_text_wrapper.dart';
 import 'dictionary_display.dart';
 
 /// A widget that transforms text into an interactive dictionary.
 ///
-/// Tap or hold any word to see definitions, pronunciations, and examples
-/// in a beautifully animated bottom sheet or dialog.
+/// Each word in the text can be tapped to see its definition, pronunciation,
+/// and examples in a beautifully animated bottom sheet or dialog.
+///
+/// Works like a [Text] widget but with dictionary lookup functionality.
 ///
 /// Example:
 /// ```dart
 /// DictionaryText(
-///   text: 'Flutter is beautiful',
-///   displayMode: DisplayMode.bottomSheet,
-///   triggerMode: TriggerMode.tap,
+///   'Flutter is a beautiful framework',
+///   style: TextStyle(fontSize: 16),
 /// )
 /// ```
 class DictionaryText extends StatefulWidget {
   /// Creates a [DictionaryText] widget.
   ///
-  /// [text] is the text to display and make interactive.
-  const DictionaryText({
-    required this.text,
+  /// The [data] parameter is the text to display and make interactive.
+  const DictionaryText(
+    this.data, {
     super.key,
+    this.style,
     this.displayMode = DisplayMode.bottomSheet,
     this.triggerMode = TriggerMode.tap,
     this.backgroundColor,
-    this.selectedTextColor,
-    this.textStyle,
+    this.selectedWordColor,
     this.definitionStyle,
     this.loadingBuilder,
     this.errorBuilder,
     this.needGuide = true,
     this.guideConfig,
-    this.animationDuration = const Duration(milliseconds: 300),
-    this.animationCurve = Curves.easeOutCubic,
     this.enableHapticFeedback = true,
-    this.service,
-    this.controller,
-    this.storageHelper,
+    this.maxLines,
+    this.overflow = TextOverflow.clip,
+    this.textAlign = TextAlign.start,
   });
 
   /// The text to display.
-  final String text;
+  final String data;
+
+  /// Style for the text.
+  final TextStyle? style;
 
   /// How to display the dictionary definition.
   ///
@@ -65,19 +65,15 @@ class DictionaryText extends StatefulWidget {
   final TriggerMode triggerMode;
 
   /// Background color for the dictionary display.
-  ///
-  /// Text color is automatically calculated based on luminosity.
   final Color? backgroundColor;
 
-  /// Color of the text when it is selected/tapped.
+  /// Color/style for the currently selected word.
   ///
+  /// The selected word appears bold and slightly larger.
   /// Defaults to the theme's primary color if not specified.
-  final Color? selectedTextColor;
+  final Color? selectedWordColor;
 
-  /// Style for the main text widget.
-  final TextStyle? textStyle;
-
-  /// Style for the definition text.
+  /// Style for the definition text in the display.
   final TextStyle? definitionStyle;
 
   /// Custom loading widget builder.
@@ -94,42 +90,19 @@ class DictionaryText extends StatefulWidget {
   /// Configuration for the tutorial guide.
   final TutorialConfig? guideConfig;
 
-  /// Duration of animations.
-  ///
-  /// Defaults to 300 milliseconds.
-  final Duration animationDuration;
-
-  /// Curve used for animations.
-  ///
-  /// Defaults to [Curves.easeOutCubic].
-  final Curve animationCurve;
-
   /// Whether to provide haptic feedback on tap.
   ///
   /// Defaults to `true`.
   final bool enableHapticFeedback;
 
-  /// Optional custom dictionary service for testing.
-  final DictionaryService? service;
+  /// Maximum number of lines for the text.
+  final int? maxLines;
 
-  /// Optional custom dictionary controller for testing.
-  final DictionaryController? controller;
+  /// How visual overflow should be handled.
+  final TextOverflow overflow;
 
-  /// Optional storage helper for testing.
-  final StorageHelper? storageHelper;
-
-  /// Creates a [DictionaryConfig] from this widget's properties.
-  DictionaryConfig get config => DictionaryConfig(
-        displayMode: displayMode,
-        triggerMode: triggerMode,
-        backgroundColor: backgroundColor,
-        selectedTextColor: selectedTextColor,
-        textStyle: textStyle,
-        definitionStyle: definitionStyle,
-        animationDuration: animationDuration,
-        animationCurve: animationCurve,
-        enableHapticFeedback: enableHapticFeedback,
-      );
+  /// How the text should be aligned horizontally.
+  final TextAlign textAlign;
 
   @override
   State<DictionaryText> createState() => _DictionaryTextState();
@@ -141,21 +114,19 @@ class _DictionaryTextState extends State<DictionaryText> {
   final GlobalKey _textKey = GlobalKey();
   TutorialCoachMark? _tutorialCoachMark;
   bool _tutorialChecked = false;
+  String? _selectedWord;
 
   @override
   void initState() {
     super.initState();
-    _controller =
-        widget.controller ?? DictionaryController(service: widget.service);
-    _storageHelper = widget.storageHelper ?? StorageHelper();
+    _controller = DictionaryController();
+    _storageHelper = StorageHelper();
     _initTutorial();
   }
 
   @override
   void dispose() {
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
+    _controller.dispose();
     super.dispose();
   }
 
@@ -233,8 +204,35 @@ class _DictionaryTextState extends State<DictionaryText> {
     _tutorialCoachMark?.show(context: context);
   }
 
-  void _handleWordTap() {
-    _controller.lookupWord(widget.text);
+  void _handleWordTap(String word) {
+    if (widget.enableHapticFeedback) {
+      HapticFeedback.selectionClick();
+    }
+
+    final cleanWord = word.replaceAll(RegExp(r'[^\w]'), '');
+    if (cleanWord.isEmpty) return;
+
+    setState(() {
+      _selectedWord = cleanWord;
+    });
+
+    _controller.lookupWord(cleanWord);
+    _showDefinition();
+  }
+
+  void _handleWordLongPress(String word) {
+    if (widget.enableHapticFeedback) {
+      HapticFeedback.mediumImpact();
+    }
+
+    final cleanWord = word.replaceAll(RegExp(r'[^\w]'), '');
+    if (cleanWord.isEmpty) return;
+
+    setState(() {
+      _selectedWord = cleanWord;
+    });
+
+    _controller.lookupWord(cleanWord);
     _showDefinition();
   }
 
@@ -283,6 +281,9 @@ class _DictionaryTextState extends State<DictionaryText> {
       },
     ).whenComplete(() {
       _controller.stopAudio();
+      setState(() {
+        _selectedWord = null;
+      });
     });
   }
 
@@ -339,32 +340,72 @@ class _DictionaryTextState extends State<DictionaryText> {
       },
     ).whenComplete(() {
       _controller.stopAudio();
+      setState(() {
+        _selectedWord = null;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final selectedColor = widget.selectedTextColor ?? theme.primaryColor;
-    final textColor = widget.backgroundColor != null
-        ? ColorUtils.getContrastingTextColor(widget.backgroundColor!)
-        : null;
+    final defaultStyle = widget.style ?? DefaultTextStyle.of(context).style;
+    final selectedColor =
+        widget.selectedWordColor ?? Theme.of(context).primaryColor;
 
-    final textStyle = widget.textStyle?.copyWith(color: textColor) ??
-        theme.textTheme.bodyLarge?.copyWith(color: textColor);
+    final words = widget.data.split(' ');
+    final spans = <InlineSpan>[];
 
-    return AnimatedTextWrapper(
+    for (int i = 0; i < words.length; i++) {
+      final word = words[i];
+      final cleanWord = word.replaceAll(RegExp(r'[^\w]'), '');
+      final isSelected = _selectedWord != null &&
+          cleanWord.toLowerCase() == _selectedWord!.toLowerCase();
+
+      final isLastWord = i == words.length - 1;
+      final displayText = isLastWord ? word : '$word ';
+
+      if (isSelected) {
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: selectedColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                displayText.trim(),
+                style: defaultStyle.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: (defaultStyle.fontSize ?? 14) * 1.1,
+                  color: selectedColor,
+                ),
+              ),
+            ),
+          ),
+        );
+      } else {
+        spans.add(
+          TextSpan(
+            text: displayText,
+            style: defaultStyle,
+            recognizer: widget.triggerMode == TriggerMode.tap
+                ? (TapGestureRecognizer()..onTap = () => _handleWordTap(word))
+                : (LongPressGestureRecognizer()
+                  ..onLongPress = () => _handleWordLongPress(word)),
+          ),
+        );
+      }
+    }
+
+    return RichText(
       key: _textKey,
-      onTrigger: _handleWordTap,
-      triggerOnTap: widget.triggerMode == TriggerMode.tap,
-      selectedColor: selectedColor,
-      animationDuration: widget.animationDuration,
-      animationCurve: widget.animationCurve,
-      enableHapticFeedback: widget.enableHapticFeedback,
-      child: Text(
-        widget.text,
-        style: textStyle,
-      ),
+      text: TextSpan(children: spans, style: defaultStyle),
+      textAlign: widget.textAlign,
+      maxLines: widget.maxLines,
+      overflow: widget.overflow,
     );
   }
 }

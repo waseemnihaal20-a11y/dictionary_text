@@ -118,10 +118,10 @@ class BasicDemoPage extends StatelessWidget {
               runSpacing: 8,
               alignment: WrapAlignment.center,
               children: const [
-                DictionaryText(text: 'Flutter'),
-                DictionaryText(text: 'beautiful'),
-                DictionaryText(text: 'framework'),
-                DictionaryText(text: 'amazing'),
+                DictionaryText('Flutter'),
+                DictionaryText('beautiful'),
+                DictionaryText('framework'),
+                DictionaryText('amazing'),
               ],
             ),
           ],
@@ -154,10 +154,10 @@ class CustomStyleDemoPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const DictionaryText(
-              text: 'programming',
+              'programming',
               backgroundColor: Color(0xFFE3F2FD),
-              selectedTextColor: Colors.blue,
-              textStyle: TextStyle(
+              selectedWordColor: Colors.blue,
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
@@ -176,10 +176,10 @@ class CustomStyleDemoPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const DictionaryText(
-              text: 'technology',
+              'technology',
               backgroundColor: Color(0xFF212121),
-              selectedTextColor: Colors.amber,
-              textStyle: TextStyle(
+              selectedWordColor: Colors.amber,
+              style: TextStyle(
                 fontSize: 20,
                 color: Colors.white,
               ),
@@ -192,7 +192,7 @@ class CustomStyleDemoPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const DictionaryText(
-            text: 'innovation',
+            'innovation',
             definitionStyle: TextStyle(
               fontSize: 18,
               height: 1.6,
@@ -234,15 +234,15 @@ class DialogModeDemoPage extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: const [
                 DictionaryText(
-                  text: 'creativity',
+                  'creativity',
                   displayMode: DisplayMode.dialog,
                 ),
                 DictionaryText(
-                  text: 'inspiration',
+                  'inspiration',
                   displayMode: DisplayMode.dialog,
                 ),
                 DictionaryText(
-                  text: 'motivation',
+                  'motivation',
                   displayMode: DisplayMode.dialog,
                 ),
               ],
@@ -284,15 +284,15 @@ class LongPressDemoPage extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: const [
                 DictionaryText(
-                  text: 'perseverance',
+                  'perseverance',
                   triggerMode: TriggerMode.longPress,
                 ),
                 DictionaryText(
-                  text: 'determination',
+                  'determination',
                   triggerMode: TriggerMode.longPress,
                 ),
                 DictionaryText(
-                  text: 'resilience',
+                  'resilience',
                   triggerMode: TriggerMode.longPress,
                 ),
               ],
@@ -366,7 +366,7 @@ class ParagraphDemoPage extends StatelessWidget {
             runSpacing: 4,
             children: words
                 .map((word) => DictionaryText(
-                      text: word,
+                      word,
                       needGuide: false,
                     ))
                 .toList(),

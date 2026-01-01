@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../controllers/dictionary_controller.dart';
 import '../models/dictionary_error.dart';
 import '../models/dictionary_model.dart';
-import '../utils/color_utils.dart';
 
 /// Widget that displays dictionary definition content.
 ///
@@ -46,61 +46,136 @@ class DictionaryDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final bgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
-    final txtColor = textColor ?? ColorUtils.getContrastingTextColor(bgColor);
 
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildDragHandle(txtColor),
+          _buildDragHandle(colorScheme),
+          _buildHeader(context, theme, colorScheme),
           Flexible(
-            child: _buildContent(context, txtColor),
+            child: _buildContent(context, theme, colorScheme),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDragHandle(Color txtColor) {
+  Widget _buildDragHandle(ColorScheme colorScheme) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: txtColor.withValues(alpha: 0.2),
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, Color txtColor) {
+  Widget _buildHeader(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return ValueListenableBuilder<DictionaryModel?>(
+      valueListenable: controller.currentDefinition,
+      builder: (context, definition, _) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      definition?.word ?? 'Loading...',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (definition?.displayPhonetic != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        definition!.displayPhonetic!,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (definition?.phonetics.isNotEmpty == true &&
+                  definition!.phonetics.first.audio != null)
+                ValueListenableBuilder<bool>(
+                  valueListenable: controller.isPlayingAudio,
+                  builder: (context, isPlaying, _) {
+                    return IconButton.filled(
+                      onPressed: isPlaying
+                          ? controller.stopAudio
+                          : controller.playAudio,
+                      icon: Icon(
+                        isPlaying
+                            ? Icons.stop_rounded
+                            : Icons.volume_up_rounded,
+                      ),
+                    ).animate().scaleXY(
+                          begin: 1.0,
+                          end: 1.1,
+                          duration: 500.ms,
+                          curve: Curves.easeInOut,
+                        );
+                  },
+                ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: onClose ?? () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.isLoading,
       builder: (context, isLoading, _) {
         if (isLoading) {
-          return _buildLoading(context);
+          return _buildLoading(context, colorScheme);
         }
 
         return ValueListenableBuilder<DictionaryError?>(
           valueListenable: controller.error,
           builder: (context, error, _) {
             if (error != null) {
-              return _buildError(context, error, txtColor);
+              return _buildError(context, theme, colorScheme, error);
             }
 
             return ValueListenableBuilder<DictionaryModel?>(
               valueListenable: controller.currentDefinition,
               builder: (context, definition, _) {
                 if (definition == null) {
-                  return const SizedBox.shrink();
+                  return _buildEmpty(theme, colorScheme);
                 }
 
-                return _buildDefinition(context, definition, txtColor);
+                return _buildDefinition(
+                    context, theme, colorScheme, definition);
               },
             );
           },
@@ -109,31 +184,44 @@ class DictionaryDisplay extends StatelessWidget {
     );
   }
 
-  Widget _buildLoading(BuildContext context) {
+  Widget _buildLoading(BuildContext context, ColorScheme colorScheme) {
     if (loadingBuilder != null) {
-      return loadingBuilder!(context);
+      return ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 300),
+        child: loadingBuilder!(context),
+      );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            'Looking up definition...',
-            style: Theme.of(context).textTheme.bodyMedium,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 300),
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Looking up definition...',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildError(
     BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
     DictionaryError error,
-    Color txtColor,
   ) {
     if (errorBuilder != null) {
       return errorBuilder!(context, error);
@@ -146,207 +234,165 @@ class DictionaryDisplay extends StatelessWidget {
         children: [
           Icon(
             Icons.search_off_rounded,
-            size: 48,
-            color: txtColor.withValues(alpha: 0.5),
+            size: 64,
+            color: colorScheme.error.withValues(alpha: 0.7),
           ),
           const SizedBox(height: 16),
           Text(
             error.title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: txtColor,
-                  fontWeight: FontWeight.bold,
-                ),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             error.message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: txtColor.withValues(alpha: 0.7),
-                ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
-          if (error.hasResolution) ...[
+          if (error.resolution != null) ...[
             const SizedBox(height: 8),
             Text(
               error.resolution!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: txtColor.withValues(alpha: 0.5),
-                  ),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
-          const SizedBox(height: 24),
-          if (onClose != null)
-            TextButton(
-              onPressed: onClose,
-              child: const Text('Close'),
-            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(ThemeData theme, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Text(
+          'No definitions available',
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildDefinition(
     BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
     DictionaryModel definition,
-    Color txtColor,
   ) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context, definition, txtColor),
-          const SizedBox(height: 20),
-          ...definition.meanings.asMap().entries.map((entry) {
-            return _buildMeaning(context, entry.value, txtColor, entry.key);
-          }),
-          const SizedBox(height: 16),
+          for (final meaning in definition.meanings)
+            _buildMeaning(theme, colorScheme, meaning),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    DictionaryModel definition,
-    Color txtColor,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                definition.word,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: txtColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              if (definition.displayPhonetic != null)
-                Text(
-                  definition.displayPhonetic!,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: txtColor.withValues(alpha: 0.6),
-                        fontStyle: FontStyle.italic,
-                      ),
-                ),
-            ],
-          ),
-        ),
-        if (definition.hasAudio) _buildAudioButton(context, txtColor),
-        if (onClose != null)
-          IconButton(
-            icon: Icon(Icons.close_rounded, color: txtColor),
-            onPressed: onClose,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildAudioButton(BuildContext context, Color txtColor) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: controller.isPlayingAudio,
-      builder: (context, isPlaying, _) {
-        return IconButton(
-          icon: Icon(
-            isPlaying ? Icons.stop_rounded : Icons.volume_up_rounded,
-            color: Theme.of(context).primaryColor,
-          ),
-          onPressed: () {
-            if (isPlaying) {
-              controller.stopAudio();
-            } else {
-              controller.playAudio();
-            }
-          },
-        );
-      },
-    );
-  }
-
   Widget _buildMeaning(
-    BuildContext context,
-    meaning,
-    Color txtColor,
-    int index,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    dynamic meaning,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               meaning.partOfSpeech,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          ...meaning.definitions.asMap().entries.map((defEntry) {
-            return _buildDefinitionItem(
-              context,
-              defEntry.value,
-              txtColor,
-              defEntry.key + 1,
-            );
-          }),
+          for (int i = 0; i < meaning.definitions.length && i < 3; i++)
+            _buildDefinitionItem(
+                theme, colorScheme, meaning.definitions[i], i + 1),
         ],
       ),
     );
   }
 
   Widget _buildDefinitionItem(
-    BuildContext context,
-    definition,
-    Color txtColor,
-    int number,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    dynamic def,
+    int index,
   ) {
-    final defStyle = definitionStyle ??
-        Theme.of(context).textTheme.bodyLarge?.copyWith(color: txtColor);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$number. ',
-                style: defStyle?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: Text(
-                  definition.definition,
-                  style: defStyle,
-                ),
-              ),
-            ],
-          ),
-          if (definition.hasExample)
-            Padding(
-              padding: const EdgeInsets.only(left: 20, top: 4),
-              child: Text(
-                '"${definition.example}"',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: txtColor.withValues(alpha: 0.6),
-                      fontStyle: FontStyle.italic,
-                    ),
+          Container(
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '$index',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  def.definition,
+                  style: definitionStyle ?? theme.textTheme.bodyMedium,
+                ),
+                if (def.example != null) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border(
+                        left: BorderSide(color: colorScheme.primary, width: 3),
+                      ),
+                    ),
+                    child: Text(
+                      '"${def.example}"',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );

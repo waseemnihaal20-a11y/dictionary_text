@@ -1,0 +1,31 @@
+name: dictionary_text
+description: >-
+  A beautiful, customizable Flutter widget that transforms any text into an
+  interactive dictionary. Tap or hold any word to see definitions,
+  pronunciations, and examples.
+version: 0.1.0
+homepage: https://github.com/example/dictionary_text
+repository: https://github.com/example/dictionary_text
+issue_tracker: https://github.com/example/dictionary_text/issues
+documentation: https://pub.dev/documentation/dictionary_text/latest/
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.0
+  just_audio: ^0.9.36
+  flutter_animate: ^4.5.0
+  tutorial_coach_mark: ^1.2.11
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.3
+
+flutter:

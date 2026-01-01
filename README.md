@@ -5,6 +5,23 @@
 
 A beautiful, customizable Flutter widget that transforms any text into an interactive dictionary. Tap or hold any word to see definitions, pronunciations, and examples in a beautifully animated bottom sheet or dialog.
 
+## Preview
+
+<!-- TODO: Add screenshot image -->
+
+![Screenshot](https://placeholder-for-screenshot.png)
+
+<!-- TODO: Add demo video/gif -->
+
+![Demo](https://placeholder-for-demo.gif)
+
+## Author
+
+**Abdul Waseem Nihaal**
+
+- Email: waseemnihaal20@gmail.com
+- GitHub: https://github.com/waseemnihaal20-a11y
+
 ## Features
 
 - **Instant Definitions** - Tap any word to see its dictionary definition
@@ -37,17 +54,15 @@ flutter pub get
 ```dart
 import 'package:dictionary_text/dictionary_text.dart';
 
-// Basic usage
-DictionaryText(
-  text: 'Flutter',
-)
+// Basic usage - works like Text widget
+DictionaryText('Flutter is amazing')
 
 // With customization
 DictionaryText(
-  text: 'beautiful',
+  'beautiful',
   displayMode: DisplayMode.bottomSheet,
   triggerMode: TriggerMode.tap,
-  selectedTextColor: Colors.blue,
+  selectedWordColor: Colors.blue,
 )
 ```
 
@@ -58,13 +73,13 @@ DictionaryText(
 ```dart
 // Bottom sheet (default)
 DictionaryText(
-  text: 'word',
+  'word',
   displayMode: DisplayMode.bottomSheet,
 )
 
 // Centered dialog
 DictionaryText(
-  text: 'word',
+  'word',
   displayMode: DisplayMode.dialog,
 )
 ```
@@ -74,13 +89,13 @@ DictionaryText(
 ```dart
 // Single tap (default)
 DictionaryText(
-  text: 'word',
+  'word',
   triggerMode: TriggerMode.tap,
 )
 
 // Long press
 DictionaryText(
-  text: 'word',
+  'word',
   triggerMode: TriggerMode.longPress,
 )
 ```
@@ -89,10 +104,10 @@ DictionaryText(
 
 ```dart
 DictionaryText(
-  text: 'word',
+  'word',
   backgroundColor: Colors.blue.shade50,
-  selectedTextColor: Colors.blue,
-  textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+  selectedWordColor: Colors.blue,
+  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
   definitionStyle: TextStyle(fontSize: 16, height: 1.5),
 )
 ```
@@ -101,7 +116,7 @@ DictionaryText(
 
 ```dart
 DictionaryText(
-  text: 'word',
+  'word',
   loadingBuilder: (context) => MyCustomLoader(),
   errorBuilder: (context, error) => MyCustomError(error),
 )
@@ -111,7 +126,7 @@ DictionaryText(
 
 ```dart
 DictionaryText(
-  text: 'word',
+  'word',
   needGuide: true,
   guideConfig: TutorialConfig(
     title: 'Dictionary Feature',
@@ -120,20 +135,31 @@ DictionaryText(
 )
 ```
 
+## Using DictionaryService Directly
+
+```dart
+final service = DictionaryService();
+final definition = await service.getDefinition('flutter');
+print(definition.word); // 'flutter'
+print(definition.meanings.first.partOfSpeech); // 'verb'
+```
+
 ## API Reference
 
-| Property               | Type          | Default       | Description                |
-| ---------------------- | ------------- | ------------- | -------------------------- |
-| `text`                 | `String`      | required      | The text to display        |
-| `displayMode`          | `DisplayMode` | `bottomSheet` | How to display definitions |
-| `triggerMode`          | `TriggerMode` | `tap`         | Gesture to trigger lookup  |
-| `backgroundColor`      | `Color?`      | null          | Background color           |
-| `selectedTextColor`    | `Color?`      | null          | Color when selected        |
-| `textStyle`            | `TextStyle?`  | null          | Text style                 |
-| `definitionStyle`      | `TextStyle?`  | null          | Definition text style      |
-| `needGuide`            | `bool`        | `true`        | Show tutorial on first use |
-| `animationDuration`    | `Duration`    | `300ms`       | Animation duration         |
-| `enableHapticFeedback` | `bool`        | `true`        | Enable haptic feedback     |
+| Property               | Type           | Default               | Description                  |
+| ---------------------- | -------------- | --------------------- | ---------------------------- |
+| `data`                 | `String`       | required (positional) | The text to display          |
+| `style`                | `TextStyle?`   | null                  | Text style                   |
+| `displayMode`          | `DisplayMode`  | `bottomSheet`         | How to display definitions   |
+| `triggerMode`          | `TriggerMode`  | `tap`                 | Gesture to trigger lookup    |
+| `backgroundColor`      | `Color?`       | null                  | Background color for display |
+| `selectedWordColor`    | `Color?`       | null                  | Color for selected word      |
+| `definitionStyle`      | `TextStyle?`   | null                  | Definition text style        |
+| `needGuide`            | `bool`         | `true`                | Show tutorial on first use   |
+| `enableHapticFeedback` | `bool`         | `true`                | Enable haptic feedback       |
+| `maxLines`             | `int?`         | null                  | Maximum number of lines      |
+| `overflow`             | `TextOverflow` | `clip`                | Text overflow behavior       |
+| `textAlign`            | `TextAlign`    | `start`               | Text alignment               |
 
 ## Platform Support
 

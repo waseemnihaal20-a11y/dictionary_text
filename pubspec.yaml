@@ -4,9 +4,9 @@ description: >-
   interactive dictionary. Tap or hold any word to see definitions,
   pronunciations, and examples.
 version: 0.1.0
-homepage: https://github.com/example/dictionary_text
-repository: https://github.com/example/dictionary_text
-issue_tracker: https://github.com/example/dictionary_text/issues
+homepage: https://github.com/waseemnihaal20-a11y/dictionary_text
+repository: https://github.com/waseemnihaal20-a11y/dictionary_text
+issue_tracker: https://github.com/waseemnihaal20-a11y/dictionary_text/issues
 documentation: https://pub.dev/documentation/dictionary_text/latest/
 
 environment:

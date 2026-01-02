@@ -3,7 +3,7 @@ description: >-
   A beautiful, customizable Flutter widget that transforms any text into an
   interactive dictionary. Tap or hold any word to see definitions,
   pronunciations, and examples.
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/waseemnihaal20-a11y/dictionary_text
 repository: https://github.com/waseemnihaal20-a11y/dictionary_text
 issue_tracker: https://github.com/waseemnihaal20-a11y/dictionary_text/issues

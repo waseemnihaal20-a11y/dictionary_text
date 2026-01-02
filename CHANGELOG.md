@@ -1,3 +1,7 @@
+## 0.1.2
+
+- **Updated README**: Added demo video
+
 ## 0.1.1
 
 - **Enhanced UI**: Updated dictionary display with modern Material 3 design

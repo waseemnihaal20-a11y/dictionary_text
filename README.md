@@ -7,13 +7,9 @@ A beautiful, customizable Flutter widget that transforms any text into an intera
 
 ## Preview
 
-<!-- TODO: Add screenshot image -->
+![Screenshot](https://uihelncxdoxavatnjnkv.supabase.co/storage/v1/object/sign/test-bucket/Screenshot_1767297722.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xYjhhYzQ2My01ZDNlLTQzNzktODNkMi1mMDNiMWQ4M2I3Y2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0LWJ1Y2tldC9TY3JlZW5zaG90XzE3NjcyOTc3MjIucG5nIiwiaWF0IjoxNzY3MzQ2MjY0LCJleHAiOjE5MjUwMjYyNjR9.DWPO68hjEBCPOE86hXIyoGjFDgBaHSH1ViS-vPwCk20)
 
-![Screenshot](https://placeholder-for-screenshot.png)
-
-<!-- TODO: Add demo video/gif -->
-
-![Demo](https://placeholder-for-demo.gif)
+![Demo](https://uihelncxdoxavatnjnkv.supabase.co/storage/v1/object/sign/test-bucket/dictionary_text_package_demo.webm?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xYjhhYzQ2My01ZDNlLTQzNzktODNkMi1mMDNiMWQ4M2I3Y2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0LWJ1Y2tldC9kaWN0aW9uYXJ5X3RleHRfcGFja2FnZV9kZW1vLndlYm0iLCJpYXQiOjE3NjczNDYxOTUsImV4cCI6MTkyNTAyNjE5NX0.t6GcvBdXwHrG4QSZc-7KTX3hlb8fR2veo6xXomcgRWY)
 
 ## Author
 

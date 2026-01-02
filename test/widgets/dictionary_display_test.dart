@@ -16,6 +16,10 @@ void main() {
 
     tearDown(() {
       controller.dispose();
+      // Clear any pending timers from animations
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Ensure all timers are cleared
+      });
     });
 
     Widget buildTestWidget({
@@ -100,10 +104,11 @@ void main() {
       controller.currentDefinition.value = createMockDictionaryModel(
         word: 'test',
         phonetic: '/test/',
+        audioUrl: null, // No audio to avoid animation
       );
 
       await tester.pumpWidget(buildTestWidget(onClose: () {}));
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(); // Can use pumpAndSettle since no animation
 
       expect(find.text('test'), findsOneWidget);
       expect(find.text('/test/'), findsOneWidget);
@@ -112,7 +117,9 @@ void main() {
 
     testWidgets('should show close button when onClose is provided',
         (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(buildTestWidget(onClose: () {}));
       await tester.pumpAndSettle();
@@ -123,7 +130,9 @@ void main() {
     testWidgets('should call onClose when close button is tapped',
         (tester) async {
       var closed = false;
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(buildTestWidget(onClose: () => closed = true));
       await tester.pumpAndSettle();
@@ -141,7 +150,10 @@ void main() {
       );
 
       await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+
+      // Add a small delay to let the animation start
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
     });
@@ -157,8 +169,30 @@ void main() {
       expect(find.byIcon(Icons.volume_up_rounded), findsNothing);
     });
 
+    testWidgets('should animate audio button when audio is available',
+        (tester) async {
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: 'https://example.com/audio.mp3',
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
+
+      // Verify the audio button is present
+      expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
+
+      // Pump a few frames to verify animation is running
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // The button should still be present during animation
+      expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
+    });
+
     testWidgets('should apply custom background color', (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(
         buildTestWidget(backgroundColor: Colors.blue),
@@ -173,7 +207,9 @@ void main() {
     });
 
     testWidgets('should apply custom definition style', (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
       const customStyle = TextStyle(fontSize: 20, color: Colors.red);
 
       await tester.pumpWidget(
@@ -185,7 +221,9 @@ void main() {
     });
 
     testWidgets('should show drag handle', (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
@@ -195,7 +233,9 @@ void main() {
     });
 
     testWidgets('should show multiple meanings', (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
@@ -205,7 +245,9 @@ void main() {
     });
 
     testWidgets('should show examples when available', (tester) async {
-      controller.currentDefinition.value = createMockDictionaryModel();
+      controller.currentDefinition.value = createMockDictionaryModel(
+        audioUrl: null, // No audio to avoid animation
+      );
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();

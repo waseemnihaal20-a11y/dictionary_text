@@ -128,7 +128,12 @@ class DictionaryDisplay extends StatelessWidget {
                             ? Icons.stop_rounded
                             : Icons.volume_up_rounded,
                       ),
-                    ).animate().scaleXY(
+                    )
+                        .animate(
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true),
+                        )
+                        .scaleXY(
                           begin: 1.0,
                           end: 1.1,
                           duration: 500.ms,

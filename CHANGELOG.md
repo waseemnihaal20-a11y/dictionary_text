@@ -1,3 +1,11 @@
+## 0.1.1
+
+- **Enhanced UI**: Updated dictionary display with modern Material 3 design
+- **Improved animations**: Added subtle scale animations for better user feedback
+- **Better visual hierarchy**: Enhanced part-of-speech badges and definition numbering
+- **Updated README**: Added actual screenshots and demo video
+- **Code quality**: Removed unused dependencies and improved test coverage
+
 ## 0.1.0
 
 - Initial release
